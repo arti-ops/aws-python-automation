@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Cloud Dashboard — Login</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-base:#060d1f; --bg-surface:#0b1530; --bg-card:#0f1e3d;
+  --border:rgba(56,120,255,0.18); --border-glow:rgba(56,189,248,0.4);
+  --accent-blue:#3b82f6; --accent-cyan:#22d3ee; --accent-green:#34d399;
+  --accent-red:#f87171;
+  --text-primary:#f0f6ff; --text-secondary:#8ba3cc; --text-muted:#4e6490;
+  --radius-sm:10px; --radius-md:16px; --radius-lg:22px;
+  --shadow-card:0 4px 30px rgba(0,0,0,0.45);
+  --shadow-blue:0 0 20px rgba(59,130,246,0.25);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg-base);
+  color:var(--text-primary);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+
+/* Animated background blobs */
+.blob {
+  position:fixed;
+  border-radius:50%;
+  filter:blur(80px);
+  opacity:0.12;
+  pointer-events:none;
+  animation:blobFloat 8s ease-in-out infinite alternate;
+}
+.blob-1 { width:500px; height:500px; background:var(--accent-blue); top:-100px; left:-100px; }
+.blob-2 { width:400px; height:400px; background:var(--accent-cyan); bottom:-80px; right:-80px; animation-delay:2s; }
+.blob-3 { width:300px; height:300px; background:#a78bfa; top:50%; left:50%; transform:translate(-50%,-50%); animation-delay:4s; }
+@keyframes blobFloat { from{transform:translateY(0) scale(1)} to{transform:translateY(-30px) scale(1.05)} }
+
+.login-wrapper {
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:440px;
+  padding:20px;
+}
+
+.login-card {
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:40px 36px;
+  box-shadow:var(--shadow-card), 0 0 60px rgba(59,130,246,0.08);
+  animation:cardIn 0.6s cubic-bezier(0.4,0,0.2,1) both;
+}
+@keyframes cardIn { from{opacity:0;transform:translateY(30px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+/* Logo */
+.login-logo {
+  text-align:center;
+  margin-bottom:32px;
+}
+.aws-logo-wrap {
+  width:90px; height:52px;
+  background:#fff;
+  border-radius:10px;
+  margin:0 auto 14px;
+  display:flex; align-items:center; justify-content:center;
+  padding:7px 9px;
+  box-shadow:0 4px 20px rgba(255,153,0,0.3);
+}
+.aws-logo-wrap svg { width:72px; height:36px; }
+.login-logo h1 {
+  font-family:'Syne',sans-serif;
+  font-size:20px;
+  font-weight:800;
+  background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:4px;
+}
+.login-logo p {
+  color:var(--text-muted);
+  font-size:12px;
+  letter-spacing:.5px;
+}
+
+/* Form */
+.input-group {
+  margin-bottom:18px;
+}
+.input-group label {
+  display:block;
+  margin-bottom:7px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:var(--text-secondary);
+}
+.input-wrap {
+  position:relative;
+}
+.input-wrap i {
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--text-muted);
+  font-size:14px;
+  transition:color .3s;
+}
+.input-wrap input {
+  width:100%;
+  padding:13px 14px 13px 40px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-primary);
+  font-size:14px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition:border-color .3s, box-shadow .3s;
+}
+.input-wrap input:focus {
+  border-color:var(--accent-blue);
+  box-shadow:0 0 0 3px rgba(59,130,246,.15);
+}
+.input-wrap input:focus + i,
+.input-wrap input:focus ~ i { color:var(--accent-cyan); }
+.input-wrap .toggle-pw {
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  left:auto;
+  cursor:pointer;
+}
+
+.login-btn {
+  width:100%;
+  padding:14px;
+  border:none;
+  background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan));
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:all .3s;
+  letter-spacing:.5px;
+  box-shadow:0 4px 20px rgba(34,211,238,.3);
+  margin-top:4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+.login-btn:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(34,211,238,.45);
+}
+.login-btn:active { transform:translateY(0); }
+
+.forgot-link {
+  display:block;
+  text-align:right;
+  color:var(--accent-cyan);
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:-10px;
+  margin-bottom:20px;
+  transition:opacity .2s;
+  text-decoration:none;
+  background:none;
+  border:none;
+}
+.forgot-link:hover { opacity:.75; }
+
+/* Error */
+.error-msg {
+  background:rgba(248,113,113,.12);
+  border:1px solid rgba(248,113,113,.3);
+  color:var(--accent-red);
+  padding:11px 14px;
+  border-radius:var(--radius-sm);
+  font-size:13px;
+  margin-bottom:18px;
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+.error-msg.show { display:flex; }
+
+.success-msg {
+  background:rgba(52,211,153,.1);
+  border:1px solid rgba(52,211,153,.3);
+  color:var(--accent-green);
+  padding:11px 14px;
+  border-radius:var(--radius-sm);
+  font-size:13px;
+  margin-bottom:18px;
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+.success-msg.show { display:flex; }
+
+/* Loading spinner */
+.spinner {
+  width:18px; height:18px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+@keyframes spin { to { transform:rotate(360deg) } }
+
+/* Divider */
+.login-divider {
+  text-align:center;
+  color:var(--text-muted);
+  font-size:11px;
+  letter-spacing:1px;
+  margin:20px 0 16px;
+  position:relative;
+}
+.login-divider::before, .login-divider::after {
+  content:'';
+  position:absolute;
+  top:50%;
+  width:38%;
+  height:1px;
+  background:var(--border);
+}
+.login-divider::before { left:0; }
+.login-divider::after { right:0; }
+
+/* MODAL OVERLAY */
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(6,13,31,.88);
+  backdrop-filter:blur(4px);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.modal {
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:32px 30px;
+  width:90%;
+  max-width:420px;
+  transform:scale(.95) translateY(20px);
+  transition:transform .3s, opacity .3s;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.modal-overlay.open .modal { transform:scale(1) translateY(0); }
+
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:22px;
+}
+.modal-header h2 {
+  font-family:'Syne',sans-serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--text-primary);
+}
+.modal-close {
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  font-size:18px;
+  cursor:pointer;
+  transition:color .2s;
+}
+.modal-close:hover { color:var(--accent-red); }
+
+.modal p.subtitle {
+  color:var(--text-secondary);
+  font-size:13px;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+
+.modal .input-group { margin-bottom:16px; }
+.modal .input-group label {
+  display:block;
+  margin-bottom:6px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:var(--text-secondary);
+}
+.modal .input-group input {
+  width:100%;
+  padding:11px 14px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-primary);
+  font-size:13px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition:border-color .3s, box-shadow .3s;
+}
+.modal .input-group input:focus {
+  border-color:var(--accent-blue);
+  box-shadow:0 0 0 3px rgba(59,130,246,.15);
+}
+.modal .input-group input::placeholder { color:var(--text-muted); }
+
+.modal-footer { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+.modal-btn {
+  padding:11px 22px;
+  border:none;
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+  transition:all .3s;
+}
+.modal-btn-primary {
+  background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan));
+  color:#fff;
+  box-shadow:0 4px 16px rgba(34,211,238,.25);
+}
+.modal-btn-primary:hover { transform:translateY(-2px); }
+.modal-btn-cancel {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-secondary);
+}
+.modal-btn-cancel:hover { border-color:var(--accent-blue); color:var(--text-primary); }
+
+/* Reset success token box */
+.token-box {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  font-size:12px;
+  color:var(--accent-cyan);
+  word-break:break-all;
+  font-family:monospace;
+  margin-top:12px;
+  display:none;
+}
+.token-box.show { display:block; }
+.token-label {
+  font-size:11px;
+  color:var(--text-muted);
+  margin-bottom:5px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-thumb { background:var(--accent-blue); border-radius:5px; }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="aws-logo-wrap">
+        <svg viewBox="0 0 304 182" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#FF9900" d="M86.4 66.4c0 3.7.4 6.7 1.1 8.9.8 2.2 1.8 4.6 3.2 7.2.5.8.7 1.6.7 2.3 0 1-.6 2-1.9 3l-6.3 4.2c-.9.6-1.8.9-2.6.9-1 0-2-.5-3-1.4-1.4-1.5-2.6-3.1-3.6-4.7-1-1.7-2-3.6-3.1-5.9-7.8 9.2-17.6 13.8-29.4 13.8-8.4 0-15.1-2.4-20-7.2-4.9-4.8-7.4-11.2-7.4-19.2 0-8.5 3-15.4 9.1-20.6 6.1-5.2 14.2-7.8 24.5-7.8 3.4 0 6.9.3 10.6.8 3.7.5 7.5 1.3 11.5 2.2v-7.3c0-7.6-1.6-12.9-4.7-16-3.2-3.1-8.6-4.6-16.3-4.6-3.5 0-7.1.4-10.8 1.3-3.7.9-7.3 2-10.8 3.4-1.6.7-2.8 1.1-3.5 1.3-.7.2-1.2.3-1.6.3-1.4 0-2.1-1-2.1-3.1v-4.9c0-1.6.2-2.8.7-3.5.5-.7 1.4-1.4 2.8-2.1 3.5-1.8 7.7-3.3 12.6-4.5 4.9-1.3 10.1-1.9 15.6-1.9 11.9 0 20.6 2.7 26.2 8.1 5.5 5.4 8.3 13.6 8.3 24.6v32.4zm-40.6 15.2c3.3 0 6.7-.6 10.3-1.8 3.6-1.2 6.8-3.4 9.5-6.4 1.6-1.9 2.8-4 3.4-6.4.6-2.4 1-5.3 1-8.7v-4.2c-2.9-.7-6-1.3-9.2-1.7-3.2-.4-6.3-.6-9.4-.6-6.7 0-11.6 1.3-14.9 4-3.3 2.7-4.9 6.5-4.9 11.5 0 4.7 1.2 8.2 3.7 10.6 2.4 2.5 5.9 3.7 10.5 3.7zm80.3 10.8c-1.8 0-3-.3-3.8-1-.8-.6-1.5-2-2.1-3.9L96.7 10.2c-.6-2-.9-3.3-.9-4 0-1.6.8-2.5 2.4-2.5h9.8c1.9 0 3.2.3 3.9 1 .8.6 1.4 2 2 3.9l16.8 66.2 15.6-66.2c.5-2 1.1-3.3 1.9-3.9.8-.6 2.2-1 4-1h8c1.9 0 3.2.3 4.1 1 .8.6 1.5 2 1.9 3.9l15.8 67 17.3-67c.6-2 1.3-3.3 2-3.9.8-.6 2.1-1 3.9-1h9.3c1.6 0 2.5.8 2.5 2.5 0 .5-.1 1-.2 1.6-.1.6-.4 1.4-.8 2.5l-24.1 77.3c-.6 2-1.3 3.3-2.1 3.9-.8.6-2.1 1-3.8 1h-8.6c-1.9 0-3.2-.3-4.1-1-.8-.7-1.5-2-1.9-4L156 23.1l-15.4 63.4c-.5 2-1.1 3.3-1.9 4-.8.6-2.2 1-4.1 1h-8.6zm128.5 2.7c-5.2 0-10.4-.6-15.4-1.8-5-1.2-8.9-2.5-11.5-4-1.6-.9-2.7-1.9-3.1-2.8-.4-.9-.6-1.9-.6-2.8v-5.1c0-2.1.8-3.1 2.3-3.1.6 0 1.2.1 1.8.3.6.2 1.5.6 2.5 1 3.4 1.5 7.1 2.7 11 3.5 4 .8 7.9 1.2 11.9 1.2 6.3 0 11.2-1.1 14.6-3.3 3.4-2.2 5.2-5.4 5.2-9.5 0-2.8-.9-5.1-2.7-7-1.8-1.9-5.2-3.6-10.1-5.2l-14.5-4.5c-7.3-2.3-12.7-5.7-16-10.2-3.3-4.4-5-9.3-5-14.5 0-4.2.9-7.9 2.7-11.1 1.8-3.2 4.2-6 7.2-8.2 3-2.3 6.4-4 10.4-5.2 4-1.2 8.2-1.7 12.6-1.7 2.2 0 4.5.1 6.7.4 2.3.3 4.4.7 6.5 1.1 2 .5 3.9 1 5.7 1.6 1.8.6 3.2 1.2 4.2 1.8 1.4.8 2.4 1.6 3 2.5.6.8.9 1.9.9 3.3v4.7c0 2.1-.8 3.2-2.3 3.2-.8 0-2.1-.4-3.8-1.2-5.7-2.6-12.1-3.9-19.2-3.9-5.7 0-10.2 1-13.4 2.9-3.2 1.9-4.8 4.8-4.8 8.8 0 2.8 1 5.2 3 7.1 2 1.9 5.7 3.8 11 5.5l14.2 4.5c7.2 2.3 12.4 5.5 15.5 9.6 3.1 4.1 4.6 8.8 4.6 14 0 4.3-.9 8.2-2.6 11.6-1.8 3.4-4.2 6.4-7.4 8.8-3.2 2.5-7 4.3-11.4 5.6-4.6 1.4-9.5 2.1-14.8 2.1z"/>
+          <path fill="#FF9900" d="M273.5 143.7c-32.9 24.3-80.7 37.2-121.8 37.2-57.6 0-109.5-21.3-148.7-56.7-3.1-2.8-.3-6.6 3.4-4.4 42.4 24.6 94.7 39.5 148.8 39.5 36.5 0 76.6-7.6 113.5-23.2 5.5-2.5 10.2 3.6 4.8 7.6z"/>
+          <path fill="#FF9900" d="M287.2 128.1c-4.2-5.4-27.8-2.6-38.5-1.3-3.2.4-3.7-2.4-.8-4.5 18.8-13.2 49.7-9.4 53.3-5 3.6 4.5-1 35.4-18.6 50.2-2.7 2.3-5.3 1.1-4.1-1.9 4-9.9 12.9-32.2 8.7-37.5z"/>
+        </svg>
+      </div>
+      <h1>AWS Cloud Console</h1>
+      <p>Sign in to manage your infrastructure</p>
+    </div>
+
+    <!-- Error / Success messages -->
+    <div class="error-msg" id="error-msg">
+      <i class="fa-solid fa-circle-xmark"></i>
+      <span id="error-text">Invalid username or password</span>
+    </div>
+    <div class="success-msg" id="success-msg">
+      <i class="fa-solid fa-circle-check"></i>
+      <span id="success-text">Login successful! Redirecting...</span>
+    </div>
+
+    <!-- Login Form -->
+    <div class="input-group">
+      <label>Username</label>
+      <div class="input-wrap">
+        <input type="text" id="username" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+        <i class="fa-solid fa-user"></i>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <i class="fa-solid fa-lock"></i>
+        <i class="fa-solid fa-eye toggle-pw" onclick="togglePw()" id="eye-icon"></i>
+      </div>
+    </div>
+
+    <button class="forgot-link" onclick="openForgotModal()">
+      <i class="fa-solid fa-key" style="margin-right:5px;"></i>Forgot password?
+    </button>
+
+    <button class="login-btn" id="login-btn" onclick="doLogin()">
+      <div class="spinner" id="login-spinner"></div>
+      <i class="fa-solid fa-right-to-bracket" id="login-icon"></i>
+      <span id="login-text">Sign In</span>
+    </button>
+
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-key" style="color:var(--accent-cyan);margin-right:9px;"></i>Forgot Password</h2>
+      <button class="modal-close" onclick="closeForgotModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="subtitle">Enter your username and registered email address. A reset token will be generated.</p>
+
+    <div class="error-msg" id="forgot-error" style="margin-bottom:14px;">
+      <i class="fa-solid fa-circle-xmark"></i>
+      <span id="forgot-error-text">Error</span>
+    </div>
+
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="forgot-username" placeholder="Your username">
+    </div>
+    <div class="input-group">
+      <label>Email Address</label>
+      <input type="email" id="forgot-email" placeholder="your@email.com">
+    </div>
+
+    <div class="token-box" id="token-box">
+      <div class="token-label">Reset Token (dev mode — copy this)</div>
+      <span id="token-value"></span>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeForgotModal()">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="submitForgotPassword()">
+        <i class="fa-solid fa-paper-plane" style="margin-right:7px;"></i>Send Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-lock-open" style="color:var(--accent-cyan);margin-right:9px;"></i>Reset Password</h2>
+      <button class="modal-close" onclick="closeResetModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="subtitle">Paste your reset token and set a new password.</p>
+
+    <div class="error-msg" id="reset-error" style="margin-bottom:14px;">
+      <i class="fa-solid fa-circle-xmark"></i>
+      <span id="reset-error-text">Error</span>
+    </div>
+    <div class="success-msg" id="reset-success" style="margin-bottom:14px;">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>Password reset successfully! You can now log in.</span>
+    </div>
+
+    <div class="input-group">
+      <label>Reset Token</label>
+      <input type="text" id="reset-token" placeholder="Paste your token here">
+    </div>
+    <div class="input-group">
+      <label>New Password</label>
+      <input type="password" id="reset-new-password" placeholder="Min 6 characters">
+    </div>
+    <div class="input-group">
+      <label>Confirm New Password</label>
+      <input type="password" id="reset-confirm-password" placeholder="Repeat new password">
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeResetModal()">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="submitResetPassword()">
+        <i class="fa-solid fa-key" style="margin-right:7px;"></i>Reset Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// LOGIN
+// ============================================================
+async function doLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  if (!username || !password) {
+    showError('Please enter both username and password.');
+    return;
+  }
+  setLoading(true);
+  hideMessages();
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      document.getElementById('success-msg').classList.add('show');
+      document.getElementById('success-text').textContent = `Welcome back, ${username}! Redirecting...`;
+      setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+    } else {
+      showError(data.detail || 'Invalid username or password');
+      setLoading(false);
+    }
+  } catch (err) {
+    showError('Connection error. Please try again.');
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('login-spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('login-icon').style.display = on ? 'none' : 'inline';
+  document.getElementById('login-text').textContent = on ? 'Signing in...' : 'Sign In';
+  document.getElementById('login-btn').disabled = on;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  document.getElementById('error-text').textContent = msg;
+  el.classList.add('show');
+}
+
+function hideMessages() {
+  document.getElementById('error-msg').classList.remove('show');
+  document.getElementById('success-msg').classList.remove('show');
+}
+
+function togglePw() {
+  const input = document.getElementById('password');
+  const icon = document.getElementById('eye-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'fa-solid fa-eye-slash toggle-pw';
+  } else {
+    input.type = 'password';
+    icon.className = 'fa-solid fa-eye toggle-pw';
+  }
+}
+
+// ============================================================
+// FORGOT PASSWORD MODAL
+// ============================================================
+function openForgotModal() {
+  document.getElementById('forgot-username').value = '';
+  document.getElementById('forgot-email').value = '';
+  document.getElementById('forgot-error').classList.remove('show');
+  document.getElementById('token-box').classList.remove('show');
+  document.getElementById('forgot-modal').classList.add('open');
+}
+
+function closeForgotModal() {
+  document.getElementById('forgot-modal').classList.remove('open');
+}
+
+async function submitForgotPassword() {
+  const username = document.getElementById('forgot-username').value.trim();
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!username || !email) {
+    document.getElementById('forgot-error-text').textContent = 'Please enter both username and email.';
+    document.getElementById('forgot-error').classList.add('show');
+    return;
+  }
+  document.getElementById('forgot-error').classList.remove('show');
+  try {
+    const res = await fetch('/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email })
+    });
+    const data = await res.json();
+    if (data.dev_token) {
+      document.getElementById('token-value').textContent = data.dev_token;
+      document.getElementById('token-box').classList.add('show');
+      // Auto-fill reset modal token
+      document.getElementById('reset-token').value = data.dev_token;
+    } else {
+      document.getElementById('forgot-error-text').textContent = 'No matching account found for that username/email.';
+      document.getElementById('forgot-error').classList.add('show');
+    }
+  } catch {
+    document.getElementById('forgot-error-text').textContent = 'Connection error. Try again.';
+    document.getElementById('forgot-error').classList.add('show');
+  }
+}
+
+// ============================================================
+// RESET PASSWORD MODAL
+// ============================================================
+function openResetModal() {
+  document.getElementById('reset-error').classList.remove('show');
+  document.getElementById('reset-success').classList.remove('show');
+  document.getElementById('reset-modal').classList.add('open');
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').classList.remove('open');
+}
+
+async function submitResetPassword() {
+  const token = document.getElementById('reset-token').value.trim();
+  const newPw = document.getElementById('reset-new-password').value;
+  const confirmPw = document.getElementById('reset-confirm-password').value;
+  document.getElementById('reset-error').classList.remove('show');
+  document.getElementById('reset-success').classList.remove('show');
+  if (!token || !newPw || !confirmPw) {
+    document.getElementById('reset-error-text').textContent = 'Please fill all fields.';
+    document.getElementById('reset-error').classList.add('show');
+    return;
+  }
+  if (newPw !== confirmPw) {
+    document.getElementById('reset-error-text').textContent = 'Passwords do not match.';
+    document.getElementById('reset-error').classList.add('show');
+    return;
+  }
+  if (newPw.length < 6) {
+    document.getElementById('reset-error-text').textContent = 'Password must be at least 6 characters.';
+    document.getElementById('reset-error').classList.add('show');
+    return;
+  }
+  try {
+    const res = await fetch('/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPw })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('reset-success').classList.add('show');
+      setTimeout(() => closeResetModal(), 2500);
+    } else {
+      document.getElementById('reset-error-text').textContent = data.detail || 'Reset failed.';
+      document.getElementById('reset-error').classList.add('show');
+    }
+  } catch {
+    document.getElementById('reset-error-text').textContent = 'Connection error. Try again.';
+    document.getElementById('reset-error').classList.add('show');
+  }
+}
+
+// After getting the token, clicking it opens the reset modal
+document.getElementById('token-box').addEventListener('click', () => {
+  closeForgotModal();
+  openResetModal();
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+
+// Focus username on load
+window.onload = () => document.getElementById('username').focus();
+</script>
+</body>
+</html>

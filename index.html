@@ -1,0 +1,1011 @@
+sed -n '48,55p' templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cloud Dashboard</title>
+ 
+    <link rel="stylesheet" href="/static/style.css">
+ 
+    <!-- ICONS -->
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+.stopped-badge, .running-badge { pointer-events: none !important; }
+.instance-card::before { pointer-events: none !important; }
+.instance-buttons { position: relative !important; z-index: 99999 !important; pointer-events: all !important; }
+.instance-buttons button { position: relative !important; z-index: 99999 !important; pointer-events: all !important; cursor: pointer !important; }
+</style>
+</head>
+ 
+<body>
+<div id="toast-container"></div>
+ 
+<div class="container">
+ 
+    <!-- SIDEBAR -->
+ 
+<div class="sidebar">
+ 
+    <div class="logo-section">
+ 
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg" class="logo">
+ 
+    </div>
+ 
+    <div class="menu">
+ 
+        <h4>EC2 AUTOMATION</h4>
+ 
+        <a href="#dashboard-section" class="menu-btn active">
+            <i class="fa-solid fa-chart-line"></i>
+            Dashboard
+        </a>
+ 
+        <a href="#instances-section" class="menu-btn">
+            <i class="fa-solid fa-server"></i>
+            Instances
+        </a>
+ 
+        <a class="menu-btn" onclick="showSection('create-instance-section')">
+            <i class="fa-solid fa-plus"></i>
+            Create Instance
+        </a>
+ 
+        <a href="#storage-section" class="menu-btn">
+            <i class="fa-solid fa-hard-drive"></i>
+            Storage Services
+        </a>
+ 
+        <h4>MONITORING</h4>
+ 
+        <a href="#monitoring-section" class="menu-btn">
+            <i class="fa-solid fa-chart-simple"></i>
+            Activity Logs
+        </a>
+ 
+        <a href="#performance-section" class="menu-btn">
+            <i class="fa-solid fa-gauge"></i>
+            Performance
+        </a>
+ 
+        <h4>SETTINGS</h4>
+ 
+        <a href="#settings-section" class="menu-btn">
+            <i class="fa-solid fa-user"></i>
+            Profile
+        </a>
+ 
+        <a href="#settings-section" class="menu-btn">
+            <i class="fa-solid fa-gear"></i>
+            Configuration
+        </a>
+ 
+    </div>
+ 
+</div>
+ 
+    <!-- MAIN CONTENT -->
+ 
+    <div class="main-content">
+ 
+        <!-- TOPBAR -->
+ 
+        <div class="topbar">
+ 
+            <div>
+                <h1>AWS Cloud Automation Dashboard</h1>
+                <p id="topbar-user-info">Manage and automate your AWS resources</p>
+            </div>
+ 
+            <div class="admin-section">
+ 
+        <div class="time-box">
+ 
+           <div id="live-date">
+              Date
+           </div>
+ 
+           <div id="live-time">
+             Time
+           </div>
+ 
+        </div>
+ 
+       <div class="admin-profile">
+ 
+         <i class="fa-solid fa-user"></i>
+ 
+<span id="logged-in-user">Administrator</span>
+ 
+   <button class="logout-btn"
+   onclick="logout()">
+ 
+    Logout
+ 
+</button>
+ 
+    </div>
+ 
+</div>
+ 
+        </div>
+ 
+        <!-- DASHBOARD CARDS -->
+ 
+        <div class="dashboard-cards">
+ 
+            <div class="card">
+                <i class="fa-solid fa-server"></i>
+                <h2 id="total-instances">0</h2>
+                <p>Total Instances</p>
+            </div>
+ 
+            <div class="card">
+                <i class="fa-solid fa-play"></i>
+                <h2 id="running-instances">0</h2>
+                <p>Running</p>
+            </div>
+ 
+            <div class="card">
+                <i class="fa-solid fa-stop"></i>
+                <h2 id="stopped-instances">0</h2>
+                <p>Stopped</p>
+            </div>
+ 
+            <div class="card">
+             <i class="fa-solid fa-bolt"></i>
+             <h2 id="automation-count">
+             0
+            </h2>
+ 
+             <p>Automated Actions</p>
+            </div>
+ 
+        </div>
+ 
+          <!-- EC2 INSTANCES -->
+ 
+        <div class="section"
+        id="instances-section">
+ 
+            <div class="section-header instance-header">
+ 
+    <h2>Your EC2 Instances</h2>
+ 
+    <button class="refresh-btn"
+    onclick="refreshInstances()">
+ 
+        <i class="fa-solid fa-rotate-right"></i>
+ 
+        Refresh
+ 
+    </button>
+ 
+</div>
+ 
+            <div class="instance-container" id="instance-container"></div>
+ 
+        <!-- CREATE INSTANCE -->
+ 
+        <div class="section"
+        id="create-instance-section">
+ 
+            <div class="section-header">
+                <h2>Create New EC2 Instance</h2>
+            </div>
+ 
+            <div class="form-grid">
+ 
+                <div class="input-group">
+                    <label>Instance Name</label>
+                    <input type="text"
+                     id="instance-name"
+                     placeholder="Enter Instance Name">
+                </div>
+ 
+                <div class="input-group">
+                    <label>OS Type</label>
+ 
+                    <select id="os-type">
+                        <option>Ubuntu</option>
+                        <option>Amazon Linux</option>
+                        <option>RedHat</option>
+                        <option>Windows</option>
+                    </select>
+                </div>
+ 
+                <div class="input-group">
+                    <label>Instance Type</label>
+ 
+                    <select id="instance-type">
+                        <option>t2.micro</option>
+                        <option>t2.small</option>
+                        <option>t2.medium</option>
+                        <option>t3.micro</option>
+                    </select>
+                </div>
+ 
+    <!-- KEYPAIR OPTION -->
+ 
+         <div class="input-group">
+ 
+         <label>Key Pair Option</label>
+ 
+        <select id="keypair-option">
+ 
+           <option>Use Existing</option>
+ 
+           <option>Create New</option>
+ 
+        </select>
+ 
+    </div>
+ 
+ 
+ 
+<!-- EXISTING KEYPAIR -->
+ 
+<div class="input-group"
+id="existing-keypair-group">
+ 
+    <label>Select Existing KeyPair</label>
+ 
+    <select id="keypair-name">
+ 
+        <option>Loading KeyPairs...</option>
+ 
+    </select>
+ 
+</div>
+ 
+ 
+ 
+<!-- NEW KEYPAIR -->
+ 
+<div class="input-group"
+id="new-keypair-group">
+ 
+    <label>New KeyPair Name</label>
+ 
+    <input type="text"
+    id="new-keypair-name"
+    placeholder="Enter KeyPair Name">
+ 
+</div>
+ 
+ 
+ 
+<!-- SECURITY GROUP OPTION -->
+ 
+<div class="input-group">
+ 
+    <label>Security Group Option</label>
+ 
+    <select id="security-group-option">
+ 
+        <option>Use Existing</option>
+ 
+        <option>Create New</option>
+ 
+    </select>
+ 
+</div>
+ 
+ 
+ 
+<!-- EXISTING SECURITY GROUP -->
+ 
+<div class="input-group"
+id="existing-security-group">
+ 
+    <label>Select Existing Security Group</label>
+ 
+    <select id="security-group-name">
+ 
+        <option>Loading Security Groups...</option>
+ 
+    </select>
+ 
+</div>
+ 
+ 
+ 
+<!-- NEW SECURITY GROUP -->
+ 
+<div class="input-group"
+id="new-security-group">
+ 
+    <label>New Security Group Name</label>
+ 
+    <input type="text"
+    id="new-security-group-name"
+    placeholder="Enter Security Group Name">
+ 
+</div>
+ 
+                <div class="input-group">
+                    <label>Volume Size (GB)</label>
+                    <input type="number"
+                     id="volume-size"
+                     placeholder="8">
+                </div>
+ 
+                <div class="input-group">
+                    <label>Subnet ID (Optional)</label>
+                    <input type="text" placeholder="Subnet ID">
+                </div>
+ 
+                <div class="input-group">
+                    <label>Associate Public IP</label>
+ 
+                    <select>
+                        <option>Yes</option>
+                        <option>No</option>
+                    </select>
+                </div>
+ 
+            </div>
+ 
+            <button class="launch-btn" onclick="createInstance()">
+                <i class="fa-solid fa-rocket"></i>
+                Launch Instance
+            </button>
+ 
+        </div>
+ 
+       <!-- ===================================================== -->
+<!-- STORAGE SERVICES -->
+<!-- ===================================================== -->
+ 
+<div class="section" id="storage-section">
+ 
+    <div class="section-header">
+ 
+        <h2>Storage Services</h2>
+ 
+    </div>
+ 
+    <div class="storage-grid">
+ 
+        <!-- EBS -->
+ 
+        <div class="storage-card active-storage">
+ 
+            <div class="storage-icon">
+                <i class="fa-solid fa-hard-drive"></i>
+            </div>
+ 
+            <h3>EBS</h3>
+ 
+            <p>Elastic Block Storage</p>
+ 
+        </div>
+ 
+        <!-- EFS -->
+ 
+        <div class="storage-card">
+ 
+            <div class="storage-icon">
+                <i class="fa-solid fa-folder-tree"></i>
+            </div>
+ 
+            <h3>EFS</h3>
+ 
+            <p>Elastic File System</p>
+ 
+        </div>
+ 
+        <!-- S3 -->
+ 
+        <div class="storage-card">
+ 
+            <div class="storage-icon">
+                <i class="fa-solid fa-bucket"></i>
+            </div>
+ 
+            <h3>S3</h3>
+ 
+            <p>Simple Storage Service</p>
+ 
+        </div>
+ 
+    </div>
+ 
+</div>
+ 
+ 
+ 
+<!-- ===================================================== -->
+<!-- EBS MANAGEMENT -->
+<!-- ===================================================== -->
+ 
+<div class="ebs-wrapper">
+ 
+    <!-- LEFT PANEL -->
+ 
+    <div class="ebs-create-panel">
+ 
+        <div class="section-header">
+ 
+            <h2>Create EBS Volume</h2>
+ 
+        </div>
+ 
+        <input type="text"
+        id="ebs-instance-name"
+        placeholder="Enter Instance Name">
+ 
+        <input type="number"
+        id="ebs-size"
+        placeholder="Volume Size (GB)">
+ 
+        <select id="ebs-type">
+ 
+            <option value="gp3">gp3</option>
+ 
+            <option value="gp2">gp2</option>
+ 
+            <option value="io1">io1</option>
+ 
+            <option value="st1">st1</option>
+ 
+        </select>
+ 
+        <input type="text"
+        id="ebs-tag"
+        placeholder="Volume Tag Name">
+ 
+        <button class="create-ebs-btn"
+        onclick="createEBS()">
+ 
+            <i class="fa-solid fa-plus"></i>
+ 
+            Create Volume
+ 
+        </button>
+ 
+    </div>
+ 
+ 
+ 
+    <!-- RIGHT PANEL -->
+ 
+    <div class="ebs-list-panel">
+ 
+        <div class="section-header">
+ 
+            <h2>Live EBS Volumes <span id="total-volumes">0</span></h2>
+ 
+        </div>
+ 
+        <div id="ebs-container"
+        class="ebs-grid">
+ 
+        </div>
+ 
+    </div>
+ 
+</div>
+ 
+ 
+<!-- EFS SECTION -->
+<div class="section" id="efs-section">
+<div class="section-header"><h2>EFS File Systems</h2></div>
+<div class="ebs-wrapper">
+<div class="ebs-create-panel">
+<div class="section-header"><h2>Create EFS</h2></div>
+<input type="text" id="efs-name" placeholder="EFS Name">
+<select id="efs-performance"><option value="generalPurpose">General Purpose</option><option value="maxIO">Max IO</option></select>
+<select id="efs-throughput"><option value="bursting">Bursting</option><option value="elastic">Elastic</option><option value="provisioned">Provisioned</option></select>
+<button class="create-ebs-btn" onclick="createEFS()"><i class="fa-solid fa-plus"></i> Create EFS</button>
+</div>
+<div class="ebs-list-panel">
+<div class="section-header instance-header"><h2>Your EFS Systems <span id="total-efs">0</span></h2>
+<button class="refresh-btn" onclick="loadEFS()"><i class="fa-solid fa-rotate-right"></i> Refresh</button></div>
+<div id="efs-container" class="ebs-grid"></div>
+</div>
+</div>
+</div>
+<!-- ACTIVITY LOG SECTION -->
+ 
+<div class="section"
+id="monitoring-section">
+ <!-- ===================================================== -->
+<!-- S3 MANAGEMENT -->
+<!-- ===================================================== -->
+
+<div class="section" id="s3-section">
+
+    <div class="section-header">
+        <h2>S3 Bucket Management</h2>
+    </div>
+
+    <!-- CREATE BUCKET -->
+    <div class="ebs-wrapper">
+
+        <div class="ebs-create-panel">
+
+            <div class="section-header">
+                <h2>Create S3 Bucket</h2>
+            </div>
+
+            <input type="text"
+            id="bucket-name"
+            placeholder="Enter Bucket Name">
+
+            <button class="create-ebs-btn"
+            onclick="createBucket()">
+                <i class="fa-solid fa-plus"></i>
+                Create Bucket
+            </button>
+
+        </div>
+
+        <!-- BUCKETS LIST -->
+        <div class="ebs-list-panel">
+
+            <div class="section-header instance-header">
+                <h2>Your S3 Buckets <span id="total-buckets">0</span></h2>
+                <button class="refresh-btn" onclick="loadBuckets()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    Refresh
+                </button>
+            </div>
+
+            <div id="buckets-container" class="ebs-grid"></div>
+
+        </div>
+
+    </div>
+
+    <!-- FILES SECTION -->
+    <div class="section" id="s3-files-section" style="display:none; margin-top:20px;">
+
+        <div class="section-header instance-header">
+            <h2>Files in: <span id="current-bucket-name"></span></h2>
+            <button class="refresh-btn" onclick="document.getElementById('s3-files-section').style.display='none'">
+                <i class="fa-solid fa-xmark"></i>
+                Close
+            </button>
+        </div>
+
+        <!-- UPLOAD FILE -->
+        <div style="margin-bottom:20px;">
+            <input type="file" id="upload-file-input">
+            <button class="create-ebs-btn" onclick="uploadFile()">
+                <i class="fa-solid fa-upload"></i>
+                Upload File
+            </button>
+        </div>
+
+        <div id="files-container" class="ebs-grid"></div>
+
+    </div>
+
+</div>
+    <div class="section-header">
+ 
+        <h2>Activity Logs</h2>
+ 
+    </div>
+ 
+    <div id="activity-log-container">
+ 
+        <!-- LOG ITEMS WILL COME HERE -->
+ 
+    </div>
+ 
+</div>
+ 
+<!-- PERFORMANCE SECTION -->
+ 
+<div class="section"
+id="performance-section">
+<select id="perf-instance-select" onchange="loadPerformance()" style="margin-bottom:15px;padding:8px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:8px;width:300px;"><option value="">-- Select an instance --</option></select>
+ 
+    <div class="section-header">
+ 
+        <h2>Performance Monitoring</h2>
+ 
+    </div>
+ 
+    <div class="performance-grid">
+ 
+ 
+        <!-- CPU -->
+ 
+        <div class="performance-card">
+ 
+            <h3>CPU Usage</h3>
+ 
+            <div class="progress-bar">
+ 
+                <div class="progress-fill"
+                id="cpu-progress">
+ 
+                </div>
+ 
+            </div>
+ 
+            <p id="cpu-text">0%</p>
+ 
+        </div>
+ 
+ 
+        <!-- RAM -->
+ 
+        <div class="performance-card">
+ 
+            <h3>RAM Usage</h3>
+ 
+            <div class="progress-bar">
+ 
+                <div class="progress-fill"
+                id="ram-progress">
+ 
+                </div>
+ 
+            </div>
+ 
+            <p id="ram-text">0%</p>
+ 
+        </div>
+ 
+ 
+        <!-- STORAGE -->
+ 
+        <div class="performance-card">
+ 
+            <h3>Storage Usage</h3>
+ 
+            <div class="progress-bar">
+ 
+                <div class="progress-fill"
+                id="storage-progress">
+ 
+                </div>
+ 
+            </div>
+ 
+            <p id="storage-text">0%</p>
+ 
+        </div>
+ 
+ 
+        <!-- NETWORK -->
+ 
+        <div class="performance-card">
+ 
+            <h3>Network Activity</h3>
+ 
+            <div class="progress-bar">
+ 
+                <div class="progress-fill"
+                id="network-progress">
+ 
+                </div>
+ 
+            </div>
+ 
+            <p id="network-text">0%</p>
+ 
+        </div>
+ 
+    </div>
+ 
+</div>
+ 
+<div class="performance-card">
+<h3>Network In</h3>
+<div class="progress-bar"><div class="progress-fill" id="netin-progress"></div></div>
+<p id="netin-text">0 KB/s</p>
+</div>
+<div class="performance-card">
+<h3>Network Out</h3>
+<div class="progress-bar"><div class="progress-fill" id="netout-progress"></div></div>
+<p id="netout-text">0 KB/s</p>
+</div>
+</div>
+<!-- SETTINGS SECTION -->
+
+ 
+<div class="section" id="users-section">
+<div class="section-header instance-header"><h2>User Management</h2>
+<button class="refresh-btn" onclick="openAddUserModal()"><i class="fa-solid fa-plus"></i> Add User</button></div>
+<table style="width:100%;border-collapse:collapse;">
+<thead><tr style="color:var(--text-muted);font-size:12px;">
+<th style="padding:10px;text-align:left;">Username</th>
+<th style="padding:10px;text-align:left;">Role</th>
+<th style="padding:10px;text-align:left;">Email</th>
+<th style="padding:10px;text-align:left;">Actions</th>
+</tr></thead>
+<tbody id="users-tbody"></tbody>
+</table>
+</div>
+<div class="section"
+id="settings-section">
+ 
+    <div class="section-header">
+ 
+        <h2>Settings</h2>
+ 
+    </div>
+ 
+    <div class="settings-grid" style="display:flex!important;flex-direction:column!important" style="display:block">
+ 
+        <!-- PROFILE SETTINGS -->
+ 
+        <div class="settings-card">
+ 
+            <h3>
+                <i class="fa-solid fa-user"></i>
+                Profile Settings
+            </h3>
+ 
+            <div class="setting-item">
+ 
+                <label>Admin Name</label>
+ 
+                <input type="text" id="profile-name" value="Administrator">
+ 
+            </div>
+ 
+            <div class="setting-item">
+ 
+                <label>Role</label>
+ 
+                <input type="text" id="profile-role" value="Super Admin" readonly>
+ 
+            </div>
+ 
+            <button class="settings-btn"
+             onclick="changePassword()">
+ 
+              Change Password
+ 
+            </button>
+ 
+            <button class="logout-settings-btn"
+            onclick="logout()">
+ 
+                Logout
+ 
+            </button>
+ 
+        </div>
+ 
+        <!-- DASHBOARD CONFIG -->
+ 
+        <div class="settings-card">
+ 
+            <h3>
+                <i class="fa-solid fa-gear"></i>
+                Dashboard Configuration
+            </h3>
+ 
+            <!-- THEME MODE -->
+ 
+            <div class="setting-item">
+ 
+                <label>Theme Mode</label>
+ 
+                <select id="theme-mode" onchange="changeTheme()">
+ 
+                    <option>Light</option>
+ 
+                    <option>Dark</option>
+ 
+                </select>
+ 
+            </div>
+ 
+            <!-- REFRESH RATE -->
+ 
+            <div class="setting-item">
+ 
+                <label>Refresh Interval</label>
+ 
+                <select id="refresh-rate">
+ 
+                    <option>5 Seconds</option>
+ 
+                    <option selected>
+                        10 Seconds
+                    </option>
+ 
+                    <option>30 Seconds</option>
+ 
+                </select>
+ 
+            </div>
+ 
+            <!-- AWS REGION -->
+ 
+            <div class="setting-item">
+ 
+                <label>AWS Region</label>
+ 
+                <select id="aws-region">
+ 
+                    <option selected>
+                        us-east-1
+                    </option>
+ 
+                    <option>
+                        ap-south-1
+                    </option>
+ 
+                    <option>
+                        eu-west-1
+                    </option>
+ 
+                </select>
+ 
+            </div>
+ 
+            <button class="settings-btn"
+              onclick="saveSettings()">
+ 
+                Save Settings
+ 
+            </button>
+ 
+        </div>
+ 
+    </div>
+ 
+</div>
+ 
+</div> <!-- main-content closing -->
+ 
+<script src="/static/script.js"></script>
+ 
+
+<!-- EDIT INSTANCE MODAL -->
+<div class="modal-overlay" id="edit-instance-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:500px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h2 style="color:#f0f6ff;">Edit Instance</h2>
+<button onclick="closeModal('edit-instance-modal')" style="background:none;border:none;color:#8ba3cc;font-size:20px;cursor:pointer;">×</button>
+</div>
+<input type="hidden" id="edit-instance-id">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">New Name</label><input type="text" id="edit-instance-name" placeholder="Leave blank to keep current" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Instance Type</label><select id="edit-instance-type" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"><option value="">Keep current</option><option>t2.micro</option><option>t3.micro</option><option>t3.small</option></select></div>
+<div style="margin-bottom:20px;"><label style="color:#8ba3cc;font-size:12px;">Volume Size (GB)</label><input type="number" id="edit-volume-size" placeholder="Leave blank to keep current" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('edit-instance-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitEditInstance()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Save Changes</button>
+</div>
+</div>
+</div>
+
+<!-- INSTANCE DETAIL MODAL -->
+<div class="modal-overlay" id="instance-detail-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:500px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h2 style="color:#f0f6ff;">Instance Details</h2>
+<button onclick="closeModal('instance-detail-modal')" style="background:none;border:none;color:#8ba3cc;font-size:20px;cursor:pointer;">×</button>
+</div>
+<div id="instance-detail-content"></div>
+</div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="add-user-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:500px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h2 id="user-modal-title" style="color:#f0f6ff;">Add User</h2>
+<button onclick="closeModal('add-user-modal')" style="background:none;border:none;color:#8ba3cc;font-size:20px;cursor:pointer;">×</button>
+</div>
+<input type="hidden" id="edit-user-original">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Username</label><input type="text" id="user-username" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Password</label><input type="password" id="user-password" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Email</label><input type="text" id="user-email" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:20px;"><label style="color:#8ba3cc;font-size:12px;">Role</label><select id="user-role" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"><option value="user">User</option><option value="admin">Admin</option></select></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('add-user-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button id="user-modal-submit-btn" onclick="submitAddUser()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Add User</button>
+</div>
+</div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="change-password-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:500px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h2 style="color:#f0f6ff;">Change Password</h2>
+<button onclick="closeModal('change-password-modal')" style="background:none;border:none;color:#8ba3cc;font-size:20px;cursor:pointer;">×</button>
+</div>
+<input type="hidden" id="change-pw-username">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Current Password</label><input type="password" id="current-password" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">New Password</label><input type="password" id="new-password" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:20px;"><label style="color:#8ba3cc;font-size:12px;">Confirm Password</label><input type="password" id="confirm-password" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('change-password-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitChangePassword()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Change Password</button>
+</div>
+</div>
+</div>
+
+<!-- EBS MODALS -->
+<div class="modal-overlay" id="ebs-attach-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:400px;">
+<h2 style="color:#f0f6ff;margin-bottom:20px;">Attach EBS</h2>
+<input type="hidden" id="attach-volume-id">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Instance Name</label><input type="text" id="attach-instance-name" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('ebs-attach-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitAttachEBS()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Attach</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="ebs-detach-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:400px;">
+<h2 style="color:#f0f6ff;margin-bottom:20px;">Detach EBS</h2>
+<input type="hidden" id="detach-volume-id">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Instance Name</label><input type="text" id="detach-instance-name" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('ebs-detach-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitDetachEBS()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Detach</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="ebs-modify-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:400px;">
+<h2 style="color:#f0f6ff;margin-bottom:20px;">Resize EBS</h2>
+<input type="hidden" id="modify-volume-id">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">New Size (GB)</label><input type="number" id="modify-volume-size" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('ebs-modify-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitModifyEBS()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Resize</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="ebs-write-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:400px;">
+<h2 style="color:#f0f6ff;margin-bottom:20px;">Write Data to EBS</h2>
+<input type="hidden" id="write-volume-id">
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">Instance Name</label><input type="text" id="write-instance-name" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:15px;"><label style="color:#8ba3cc;font-size:12px;">File Name</label><input type="text" id="write-file-name" placeholder="test.txt" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"></div>
+<div style="margin-bottom:20px;"><label style="color:#8ba3cc;font-size:12px;">Content</label><textarea id="write-content" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;height:80px;"></textarea></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('ebs-write-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitWriteEBS()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Write</button>
+</div>
+</div>
+</div>
+
+<!-- EFS EDIT MODAL -->
+<div class="modal-overlay" id="efs-edit-modal">
+<div class="modal" style="background:#0b1530;border:1px solid rgba(56,120,255,0.18);border-radius:16px;padding:30px;width:90%;max-width:400px;">
+<h2 style="color:#f0f6ff;margin-bottom:20px;">Edit EFS</h2>
+<input type="hidden" id="efs-edit-id">
+<div style="margin-bottom:20px;"><label style="color:#8ba3cc;font-size:12px;">Throughput Mode</label><select id="efs-edit-throughput" style="width:100%;padding:10px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#f0f6ff;margin-top:5px;"><option value="bursting">Bursting</option><option value="elastic">Elastic</option><option value="provisioned">Provisioned</option></select></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button onclick="closeModal('efs-edit-modal')" style="padding:10px 20px;background:#0f1e3d;border:1px solid rgba(56,120,255,0.18);border-radius:8px;color:#8ba3cc;cursor:pointer;">Cancel</button>
+<button onclick="submitUpdateEFS()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border:none;border-radius:8px;color:#fff;cursor:pointer;">Update</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL OVERLAY STYLES -->
+<style>
+.modal-overlay { position:fixed;inset:0;background:rgba(6,13,31,.88);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s; }
+.modal-overlay.open { opacity:1;pointer-events:all; }
+.role-badge { padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600; }
+.role-admin { background:rgba(59,130,246,.2);color:#3b82f6; }
+.role-user { background:rgba(34,211,238,.2);color:#22d3ee; }
+.tbl-btn { padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600; }
+.tbl-edit { background:rgba(59,130,246,.2);color:#3b82f6; }
+.tbl-del { background:rgba(248,113,113,.2);color:#f87171; }
+</style>
+
+</body>
+</html>
+ 

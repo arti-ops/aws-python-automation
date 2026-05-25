@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --aws-orange: #FF9900;
+            --aws-dark: #0A1628;
+            --aws-navy: #0F2040;
+            --aws-blue: #1A3A6E;
+            --aws-accent: #FF9900;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.08);
+            --text-primary: #F0F4FF;
+            --text-muted: rgba(200,210,240,0.6);
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--aws-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 10% 20%, rgba(26,58,110,0.7) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 90% 80%, rgba(255,153,0,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 80% at 50% 50%, rgba(15,32,64,0.9) 0%, transparent 100%);
+        }
+
+        /* Grid lines */
+        .grid-lines {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,153,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,153,0,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridShift 20s linear infinite;
+        }
+
+        @keyframes gridShift {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(60px); }
+        }
+
+        /* Floating orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: orbFloat 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: rgba(255,153,0,0.07);
+            top: -100px; left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px; height: 300px;
+            background: rgba(26,58,110,0.4);
+            bottom: -50px; right: -50px;
+            animation-delay: -3s;
+        }
+
+        .orb-3 {
+            width: 200px; height: 200px;
+            background: rgba(255,153,0,0.05);
+            top: 50%; right: 15%;
+            animation-delay: -5s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20px, -30px) scale(1.05); }
+            66% { transform: translate(-15px, 20px) scale(0.95); }
+        }
+
+        /* Particles */
+        .particles {
+            position: absolute;
+            inset: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: var(--aws-orange);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFly linear infinite;
+        }
+
+        @keyframes particleFly {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.3; }
+            100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+        }
+
+        /* Main layout */
+        .page-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+            animation: containerReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes containerReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* AWS Logo / Brand */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeDown 0.6s ease forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .aws-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .aws-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--aws-orange);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(255,153,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .aws-logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
+        }
+
+        .aws-logo-icon svg {
+            width: 26px; height: 26px;
+            fill: white;
+            position: relative; z-index: 1;
+        }
+
+        .aws-logo-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .aws-logo-text span {
+            color: var(--aws-orange);
+        }
+
+        .brand-tagline {
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* Card */
+        .login-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 44px 40px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(255,153,0,0.05),
+                0 25px 60px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--aws-orange), transparent);
+            opacity: 0.8;
+        }
+
+        .login-card::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,153,0,0.06), transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 26px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .card-subtitle {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+        }
+
+        .divider-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Input groups */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .input-label svg {
+            width: 13px; height: 13px;
+            opacity: 0.6;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 15px 18px 15px 48px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder {
+            color: rgba(200,210,240,0.25);
+            font-size: 14px;
+        }
+
+        .input-wrapper input:focus {
+            border-color: rgba(255,153,0,0.5);
+            background: rgba(255,153,0,0.04);
+            box-shadow:
+                0 0 0 3px rgba(255,153,0,0.08),
+                0 0 20px rgba(255,153,0,0.05);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,153,0,0.5);
+            display: flex;
+            pointer-events: none;
+        }
+
+        .input-icon svg {
+            width: 17px; height: 17px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover { color: var(--aws-orange); }
+        .toggle-password svg { width: 17px; height: 17px; }
+
+        /* Options row */
+        .options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            display: none;
+        }
+
+        .custom-checkbox {
+            width: 18px; height: 18px;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 5px;
+            background: rgba(255,255,255,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .remember-me input:checked + .custom-checkbox {
+            background: var(--aws-orange);
+            border-color: var(--aws-orange);
+        }
+
+        .remember-me input:checked + .custom-checkbox svg {
+            opacity: 1;
+        }
+
+        .custom-checkbox svg {
+            width: 10px; height: 10px;
+            fill: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .remember-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .forgot-link {
+            font-size: 13px;
+            color: var(--aws-orange);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .forgot-link:hover { opacity: 1; }
+
+        /* Login button */
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            background: linear-gradient(135deg, #FF9900, #FF6B00);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0.3px;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 4px 20px rgba(255,153,0,0.3),
+                0 1px 0 rgba(255,255,255,0.1) inset;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                0 8px 30px rgba(255,153,0,0.45),
+                0 1px 0 rgba(255,255,255,0.1) inset;
+        }
+
+        .login-btn:hover::before { opacity: 1; }
+
+        .login-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(255,153,0,0.3);
+        }
+
+        .login-btn.loading {
+            pointer-events: none;
+        }
+
+        .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-spinner {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .login-btn.loading .btn-text { display: none; }
+        .login-btn.loading .btn-spinner { display: block; }
+        .login-btn.loading .btn-arrow { display: none; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-arrow {
+            transition: transform 0.3s;
+        }
+
+        .login-btn:hover .btn-arrow {
+            transform: translateX(3px);
+        }
+
+        /* Error message */
+        .error-msg {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 13.5px;
+            color: #FCA5A5;
+        }
+
+        .error-msg.show { display: flex; }
+        .error-msg svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* Footer */
+        .card-footer {
+            margin-top: 28px;
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .security-badge svg {
+            width: 14px; height: 14px;
+            color: rgba(255,153,0,0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .login-card {
+                padding: 32px 24px;
+                border-radius: 20px;
+            }
+
+            .card-title { font-size: 22px; }
+        }
+
+        /* Input focus animation */
+        .input-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            width: 0; height: 2px;
+            background: var(--aws-orange);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .input-wrapper:focus-within::after {
+            width: calc(100% - 24px);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-canvas">
+    <div class="bg-gradient"></div>
+    <div class="grid-lines"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="particles" id="particles"></div>
+</div>
+
+<!-- Page -->
+<div class="page-wrapper">
+    <div class="login-container">
+
+        <!-- Brand -->
+        <div class="brand-header">
+            <div class="aws-logo">
+                <div class="aws-logo-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6.763 10.036c0 .296.032.535.088.71.064.176.144.368.256.576.04.064.056.128.056.184 0 .08-.048.16-.152.24l-.504.336c-.072.048-.144.072-.208.072-.08 0-.16-.04-.24-.112a2.473 2.473 0 01-.288-.376 6.212 6.212 0 01-.248-.472c-.624.736-1.408 1.104-2.352 1.104-.672 0-1.208-.192-1.6-.576-.392-.384-.592-.896-.592-1.536 0-.68.24-1.232.728-1.648.488-.416 1.136-.624 1.96-.624.272 0 .552.024.848.064.296.04.6.104.92.176v-.584c0-.608-.128-1.032-.376-1.28-.256-.248-.688-.368-1.304-.368-.28 0-.568.032-.864.104-.296.072-.584.16-.864.272-.128.056-.224.088-.28.104a.526.526 0 01-.128.016c-.112 0-.168-.08-.168-.248v-.392c0-.128.016-.224.056-.28.04-.056.112-.112.224-.168.28-.144.616-.264 1.008-.36A5.2 5.2 0 014.8 5.6c1 0 1.736.232 2.2.688.456.456.688 1.152.688 2.08v2.668zm-3.248 1.216c.264 0 .536-.048.824-.144.288-.096.544-.272.76-.512.128-.152.224-.32.272-.512.048-.192.08-.424.08-.696V9.04a6.8 6.8 0 00-.736-.136 6.037 6.037 0 00-.752-.048c-.536 0-.928.104-1.192.32-.264.216-.392.52-.392.92 0 .376.096.656.296.848.192.2.472.296.84.296zm6.44.856c-.144 0-.24-.024-.304-.08-.064-.048-.12-.16-.168-.312L7.8 6.896a1.404 1.404 0 01-.072-.32c0-.128.064-.2.192-.2h.784c.152 0 .256.024.312.08.064.048.112.16.16.312l1.216 4.784 1.128-4.784c.04-.16.088-.264.152-.312.064-.048.176-.08.32-.08h.64c.152 0 .256.024.32.08.064.048.12.16.152.312l1.144 4.848 1.256-4.848c.048-.16.104-.264.16-.312.064-.048.168-.08.312-.08h.744c.128 0 .2.064.2.2 0 .04-.008.08-.016.128a1.19 1.19 0 01-.056.2l-1.736 5.72c-.048.16-.104.264-.168.312-.064.048-.168.08-.304.08h-.688c-.152 0-.256-.024-.32-.08-.064-.056-.12-.16-.152-.32l-1.12-4.664-1.112 4.656c-.04.16-.088.264-.152.32-.064.056-.176.08-.32.08h-.688zm9.272.184c-.416 0-.832-.048-1.232-.144-.4-.096-.712-.2-.92-.32-.128-.072-.216-.152-.248-.224a.563.563 0 01-.048-.224v-.408c0-.168.064-.248.184-.248.048 0 .096.008.144.024.048.016.12.048.2.08.272.12.568.216.888.28.328.064.648.096.976.096.52 0 .92-.088 1.2-.272.28-.184.424-.448.424-.792 0-.232-.072-.424-.224-.584-.152-.16-.44-.304-.864-.44l-1.24-.384c-.624-.2-1.088-.488-1.376-.864-.288-.368-.432-.776-.432-1.208 0-.352.08-.664.232-.928.16-.264.368-.496.632-.68.264-.184.56-.32.904-.416.344-.096.704-.136 1.08-.136.192 0 .392.016.584.04.2.032.384.072.568.112.176.048.344.096.504.152.16.056.288.112.384.168.128.072.224.152.272.24.048.08.072.184.072.312v.376c0 .168-.064.256-.184.256-.064 0-.168-.032-.304-.096-.456-.208-.968-.312-1.536-.312-.472 0-.84.072-1.096.224-.256.152-.384.384-.384.704 0 .232.08.432.248.592.168.16.48.32.936.464l1.216.384c.616.2 1.064.48 1.336.832.272.352.4.752.4 1.2 0 .36-.08.688-.232.976-.16.288-.376.536-.648.744-.272.208-.592.36-.96.464-.384.112-.792.168-1.232.168z"/>
+                    </svg>
+                </div>
+                <span class="aws-logo-text">Amazon <span>Web Services</span></span>
+            </div>
+            <p class="brand-tagline">Management Console · Secure Access Portal</p>
+        </div>
+
+        <!-- Card -->
+        <div class="login-card">
+            <h1 class="card-title">Welcome back</h1>
+            <p class="card-subtitle">Sign in to access your AWS Dashboard</p>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">credentials</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- Username -->
+            <div class="input-group">
+                <div class="input-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
+                    </svg>
+                    Username
+                </div>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
+                        </svg>
+                    </span>
+                    <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <div class="input-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                    Password
+                </div>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                        </svg>
+                    </span>
+                    <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+                    <button class="toggle-password" type="button" onclick="togglePassword(this)" aria-label="Toggle password">
+                        <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="options-row">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <div class="custom-checkbox">
+                        <svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                    </div>
+                    <span class="remember-label">Keep me signed in</span>
+                </label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <!-- Button -->
+            <button class="login-btn" id="loginBtn" onclick="login()">
+                <div class="btn-content">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Sign In to Console</span>
+                    <span class="btn-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </span>
+                </div>
+            </button>
+
+            <!-- Error -->
+            <div class="error-msg" id="errorMsg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span id="errorText">Invalid credentials. Please try again.</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="card-footer">
+                <div class="security-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    Secured with TLS 1.3 · AWS IAM Protected · Made by Shrey ⚡
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Particles
+    (function () {
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = (8 + Math.random() * 14) + 's';
+            p.style.animationDelay = (Math.random() * 15) + 's';
+            p.style.opacity = Math.random() * 0.5;
+            p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
+            container.appendChild(p);
+        }
+    })();
+
+    // Remember checkbox
+    document.querySelector('.remember-me').addEventListener('click', function (e) {
+        const cb = document.getElementById('remember');
+        cb.checked = !cb.checked;
+    });
+
+    // Toggle password
+    function togglePassword(btn) {
+        const input = document.getElementById('password');
+        const isText = input.type === 'text';
+        input.type = isText ? 'password' : 'text';
+        btn.querySelector('svg').innerHTML = isText
+            ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+            : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/>';
+    }
+
+    // Enter key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') login();
+    });
+
+    // Show error
+    function showError(msg) {
+        const el = document.getElementById('errorMsg');
+        document.getElementById('errorText').textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    // Login
+    async function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+
+        if (!username || !password) {
+            showError('Please enter both username and password.');
+            return;
+        }
+
+        btn.classList.add('loading');
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                window.location.href = "/dashboard";
+            } else {
+                btn.classList.remove('loading');
+                showError(data.detail || 'Invalid credentials. Please try again.');
+            }
+        } catch (error) {
+            console.error(error);
+            btn.classList.remove('loading');
+            showError('Connection failed. Check your network and try again.');
+        }
+    }
+</script>
+</body>
+</html>
