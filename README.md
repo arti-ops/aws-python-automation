@@ -162,18 +162,6 @@ AmazonSSMFullAccess
 
 **Reset tokens are dev-only.** The forgot-password flow returns the token directly in the API response (no email). This is fine for testing but obviously not how you'd ship it in production.
 
----
-
-## Things I want to add next
-
-- [ ] Plug in a real database so users persist
-- [ ] Support multiple AWS regions
-- [ ] IAM role management from the UI
-- [ ] Docker setup so it's easier to deploy
-- [ ] Cost explorer tab
-
----
-
 ## Author
 
 Built by 
