@@ -179,4 +179,10 @@ AmazonSSMFullAccess
 
 ## Author
 
-Built by **Shrey** ⚡
+Built by 
+Shrey 
+Vanshit
+jayendra
+Arti 
+Sinchana
+
