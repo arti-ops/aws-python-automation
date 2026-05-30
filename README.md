@@ -38,19 +38,16 @@ Admins can add, edit, and delete users. There's a role system (admin vs user). P
 
 ## Project structure
 
-```
-aws-dashboard/
-├── main.py               # All the FastAPI routes and AWS logic
-├── static/
-│   ├── script.js         # All frontend JS — API calls, UI updates
-│   ├── style.css         # Dark theme (the main one)
-│   └── old_style.css     # Old light theme, kept for reference
-└── templates/
-    ├── login.html        # Login page with forgot-password modal
-    └── index.html        # The main dashboard
-```
+| File | Description |
+|---|---|
+| [newmain.py](./newmain.py) | FastAPI backend — all routes & AWS logic |
+| [script.js](./script.js) | Frontend JS — API calls & UI logic |
+| [style.css](./style.css) | Dark theme styles |
+| [style1.css](./style1.css) | Light theme (reference) |
+| [index.html](./index.html) | Main dashboard |
+| [login.html](./login.html) | Login page |
+| [api.py](./api.py) | API helper |
 
----
 
 ## How to run it locally
 
@@ -61,8 +58,8 @@ aws-dashboard/
 
 **Step 1 — Clone the repo**
 ```bash
-git clone https://github.com/your-username/aws-cloud-dashboard.git
-cd aws-cloud-dashboard
+git clone https://github.com/arti-ops/aws-python-automation.git
+cd aws-python-automation
 ```
 
 **Step 2 — Install dependencies**
